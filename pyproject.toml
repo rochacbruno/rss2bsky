@@ -1,0 +1,56 @@
+[project]
+name = "rss2bsky"
+version = "0.1.1"
+description = "Crosspost RSS Feed to Bluesky"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "atproto>=0.0.54",
+    "dynaconf>=3.2.6",
+    "feedparser>=6.0.11",
+    "httpx>=0.26.0",
+    "taskipy>=1.13.0",
+]
+authors = [
+   {name = "Bruno Rocha", email = "rochacbruno@gmail.com"}
+]
+maintainers = [
+   {name = "Bruno Rocha", email = "rochacbruno@gmail.com"}
+]
+license = {file = "LICENSE"}
+keywords = ["rss", "mastodon", "fediverse", "Bluesky", "atproto", "cross posting"]
+
+[project.urls]
+Homepage = "https://github.com/rochacbruno/rss2bsky"
+Repository = "https://github.com/rochacbruno/rss2bsky"
+
+[project.scripts]
+rss2bsky = "rss2bsky.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+dev-dependencies = [
+    "ipdb>=0.13.13",
+    "ipython>=8.27.0",
+    "isort>=5.13.2",
+    "pylsp-mypy>=0.6.9",
+    "python-lsp-server[all]>=1.12.0",
+    "ruff>=0.6.8",
+    "twine>=5.1.1",
+]
+
+[tool.ruff]
+line-length = 80
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+
+[tool.taskipy.tasks]
+format = "ruff format --line-length 80 rss2bsky/*.py"
+isort = "isort --profile=black -m 3 rss2bsky/*.py"
+fmt = "task isort && task format"

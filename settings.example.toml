@@ -1,0 +1,22 @@
+# RSS FEED URL
+FEED_URL = "https://YOURS_FEED_URL"
+
+# BSKY CREDENTIALS
+HANDLE = "you.bsky.social"
+PASSWORD = "YOUR_APP_PASSWORD_HERE"
+
+# IF THE FEED CONTAINS MULTIPLE OLD POSTS WHEN TO START POSTING?
+START_POST_DATE = "Mon, 29 Sep 2024 23:59:59 +0100"
+
+# SECONDS TO WAIT BETWEEN RUNS
+INTERVAL = 60
+
+# FILE TO PERSIST LAST POSTED TIME
+LAST_POSTED_FILE = 'last_posted.txt'
+
+# YOUR FEED DATE FORMAT
+DATE_FORMAT = "%a, %d %b %Y %H:%M:%S %z"
+
+# Split messages at `:` considering only text after the first `:`
+# Util for feeds that adds `@foo@bar created new post:`
+# SPLITTER = ":"

@@ -1,0 +1,6 @@
+settings.toml
+.venv
+__pycache__
+dist/
+__pycache__/
+last_posted.txt
