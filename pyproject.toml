@@ -1,6 +1,6 @@
 [project]
 name = "rss2bsky"
-version = "0.1.1"
+version = "0.1.2"
 description = "Crosspost RSS Feed to Bluesky"
 readme = "README.md"
 requires-python = ">=3.10"

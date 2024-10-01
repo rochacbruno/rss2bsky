@@ -68,7 +68,6 @@ def is_image(url):
 
 
 def post_to_bluesky(client, message, image=None):
-    print("posting to bluesky")
     # embed = None
     if image:
         client.send_image(
@@ -83,8 +82,7 @@ def post_to_bluesky(client, message, image=None):
 def main():
     # Read RSS feed URL and start date from environment variables
     feed_url = settings.FEED_URL
-    if not feed_url:
-        raise ValueError("FEED_URL environment variable is not set")
+    print(f"Fetching {feed_url} every {settings.INTERVAL} seconds...")
 
     start_post_date_str = settings.START_POST_DATE
     start_post_date = (
@@ -96,13 +94,9 @@ def main():
     # Initialize Bluesky client
     bsky_handle = settings.HANDLE
     bsky_password = settings.PASSWORD
-    if not bsky_handle or not bsky_password:
-        raise ValueError("HANDLE and PASSWORD must be set")
 
     client = Client()
     client.login(bsky_handle, bsky_password)
-
-    print(f"starting loop with {feed_url}")
 
     while True:
         # Fetch RSS feed
@@ -116,7 +110,6 @@ def main():
             else None
         )
 
-        print(f"Processing {len(feed.entries)}")
         # Process feed items in reverse order
         for entry in reversed(feed.entries):
             pub_date = datetime.strptime(entry.published, settings.DATE_FORMAT)
@@ -124,7 +117,7 @@ def main():
             if (not last_posted_date or pub_date > last_posted_date) and (
                 not start_post_date or pub_date > start_post_date
             ):
-                print(f"Preparing {entry.link}")
+                print(f"Preparing {entry.link} {entry.published}")
                 # Truncate description to 300 characters
                 message = truncate_text(entry.description, entry.link, 300)
 
@@ -133,18 +126,15 @@ def main():
                 if (enclosures := entry.get("enclosures")) and is_image(
                     enclosures[0].get("url")
                 ):
-                    image = download_image(enclosures[0]["url"])
+                    url = enclosures[0]["url"]
+                    print(f"downloading image: {url}")
+                    image = download_image(url)
 
-                if image:
-                    print("Entry has an image")
-
-                # Post to Bluesky
+                print("posting to bluesky")
                 post_to_bluesky(client, message, image)
 
                 # Save the last posted date
                 save_last_posted_date(entry.published)
-            else:
-                print(f"skipped {entry.link}, already posted")
 
         # Wait for 30 seconds before the next check
         time.sleep(settings.INTERVAL)
