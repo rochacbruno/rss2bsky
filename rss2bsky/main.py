@@ -64,7 +64,7 @@ def download_image(url):
 
 
 def is_image(url):
-    return url.lower().endswith((".jpg", ".jpeg", ".png"))
+    return url.lower().endswith((".jpg", ".jpeg", ".png", ".gif"))
 
 
 def post_to_bluesky(client, message, image=None):
@@ -112,6 +112,11 @@ def main():
 
         # Process feed items in reverse order
         for entry in reversed(feed.entries):
+            if (
+                skip_tag := settings.get("SKIP_TAG")
+            ) and skip_tag in entry.description:
+                continue
+
             pub_date = datetime.strptime(entry.published, settings.DATE_FORMAT)
 
             if (not last_posted_date or pub_date > last_posted_date) and (
@@ -120,13 +125,17 @@ def main():
                 print(f"Preparing {entry.link} {entry.published}")
                 # Truncate description to 300 characters
                 message = truncate_text(entry.description, entry.link, 300)
-
-                # Check if the entry has an image enclosure
                 image = None
-                if (enclosures := entry.get("enclosures")) and is_image(
-                    enclosures[0].get("url")
+
+                media_key = "media_content"  # Mastodon
+                if "enclosures" in entry:
+                    media_key = "enclosures"  # GoToSocial
+
+                # For now only the first image will repost.
+                if (media_content := entry.get(media_key)) and is_image(
+                    media_content[0].get("url")
                 ):
-                    url = enclosures[0]["url"]
+                    url = media_content[0]["url"]
                     print(f"downloading image: {url}")
                     image = download_image(url)
 
