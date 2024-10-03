@@ -5,6 +5,7 @@ from datetime import datetime
 import feedparser
 import httpx
 from atproto import Client, client_utils
+from atproto_client.exceptions import RequestException
 from dynaconf import Dynaconf, Validator
 
 REQUIRED_CONFIG = (
@@ -79,6 +80,23 @@ def post_to_bluesky(client, message, image=None):
         client.send_post(text=message)
 
 
+def get_client():
+    # Initialize Bluesky client
+    client = None
+    while client is None:
+        try:
+            client = Client()
+            client.login(settings.HANDLE, settings.PASSWORD)
+        except RequestException as e:
+            msg = str(e)
+            if "RateLimitExceeded" in msg:
+                print("Rate Limited")
+                time.sleep(86400)
+            print(str(e))
+            continue
+    return client
+
+
 def main():
     # Read RSS feed URL and start date from environment variables
     feed_url = settings.FEED_URL
@@ -91,13 +109,7 @@ def main():
         else None
     )
 
-    # Initialize Bluesky client
-    bsky_handle = settings.HANDLE
-    bsky_password = settings.PASSWORD
-
-    client = Client()
-    client.login(bsky_handle, bsky_password)
-
+    client = None  # Force stantiation when needed
     while True:
         # Fetch RSS feed
         feed = feedparser.parse(feed_url)
@@ -140,12 +152,14 @@ def main():
                     image = download_image(url)
 
                 print("posting to bluesky")
+                client = client or get_client()
                 post_to_bluesky(client, message, image)
 
                 # Save the last posted date
                 save_last_posted_date(entry.published)
 
         # Wait for 30 seconds before the next check
+        client = None  # Force login next time
         time.sleep(settings.INTERVAL)
 
 
